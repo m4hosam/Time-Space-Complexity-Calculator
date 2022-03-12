@@ -133,26 +133,50 @@ int editFile()
 int main()
 {
     int a[20] = {1, 2, 3, 25, 12, 1, 0, 0, 0};
+    int sequence[20];
     int k = findTheLargest(a);
     printf("Hello %d\n", k);
     editFile();
 
-    // printf("%d %d %d %d\n", counter[0], counter[1], counter[2], counter[3]);
-    // int largest;
-    // for (int k = 10; k < 100000; k = k * 10)
-    // {
-    //     sumtest(k, k, k);
-    //     for (int j = 0; j < 5; j++)
-    //     {
-    //         printf("size[%d] ->counter[%d]: %d\n", k, j, counter[j]);
-    //     }
-    //     printf("\nsecond set\n\n");
-    //     counter[0] = 0;
-    //     counter[1] = 0;
-    //     counter[2] = 0;
-    //     counter[3] = 0;
-    //     counter[4] = 0;
-    // }
+    printf("%d %d %d %d\n", counter[0], counter[1], counter[2], counter[3]);
+    int largest;
+    int index = 0;
+    for (int k = 10; k < 100000; k = k * 10)
+    {
+        // function Call
+        basicFunction(k);
+        // Function Call
+
+        largest = findTheLargest(counter);
+        sequence[index] = largest;
+        index++;
+        printf("%d %d %d %d\n", counter[0], counter[1], counter[2], counter[3]);
+
+        for (int i = 0; i < 20; i++)
+            counter[i] = 0;
+    }
+    float average;
+    int totalNum, z;
+    for (z = 0; z < 4; z++)
+    {
+        totalNum = totalNum + sequence[z];
+        printf("sequence: %d\n", sequence[z]);
+    }
+
+    average = totalNum / z;
+    printf("Average: %f, totalnum: %d , z: %d\n", average, totalNum, z);
+
+    if (sequence[0] == sequence[1] && sequence[1] == sequence[2])
+        printf("Time Complexty: O(1)\n");
+
+    else if (average > 5 && average < 50)
+        printf("Time Complexty: O(logn)\n");
+    else if (average > 1000 && average < 10000)
+        printf("Time Complexty: O(n)\n");
+    else if (average > 100000 && average < 1000000)
+        printf("Time Complexty: O(nlogn)\n");
+    else
+        printf("Time Complexty: Not Specific\n");
 
     return 0;
 }
