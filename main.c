@@ -17,13 +17,13 @@ int findTheLargest(int arr[])
     return largest;
 }
 
-int getFileInfo()
+int getFileInfo(int info[])
 {
 
     FILE *fileText;
     char c, check, ch;
     ;
-    int functionNameStart, functionNameEnd, functionStart, argumentNum;
+    // int functionNameStart, functionNameEnd, functionStart, argumentNum = 1;
     if ((fileText = fopen(text, "r")) == NULL)
     {
         printf("Error Opening\n");
@@ -34,7 +34,7 @@ int getFileInfo()
     while (c != '(')
         c = fgetc(fileText);
 
-    functionNameEnd = ftell(fileText);
+    info[1] = ftell(fileText);
 
     check = fgetc(fileText);
     while (check != ' ')
@@ -43,18 +43,20 @@ int getFileInfo()
         check = fgetc(fileText);
     }
 
-    functionNameStart = ftell(fileText);
+    info[0] = ftell(fileText);
 
     ch = fgetc(fileText);
     while (ch != '(')
         ch = fgetc(fileText);
 
-    while (ch != ')')
+    while (ch != '{')
     {
         if (ch == ',')
-            argumentNum++;
+            info[3]++;
         ch = fgetc(fileText);
     }
+    info[2] = ftell(fileText);
+    info[3]++;
 
     fclose(fileText);
 }
@@ -62,9 +64,10 @@ int getFileInfo()
 int editFile()
 {
     FILE *fileText, *fileSource;
-    char alltext[2000] = "";
     char ch;
-    char buf[1000];
+    char buf[100];
+    int info[4] = {0};
+    int indexf;
 
     if ((fileText = fopen(text, "r")) == NULL)
     {
@@ -80,35 +83,50 @@ int editFile()
 
     fprintf(fileSource, "int counter[20] = {0};\n\n");
 
+    // Getting the pointer information
+
     ch = fgetc(fileText);
-    while (ch != EOF)
+    while (ch != ' ')
+    {
+        fputc(ch, fileSource);
+        ch = fgetc(fileText);
+        // indexf = ftell(fileText);
+    }
+
+    fprintf(fileSource, " basicFunction(");
+
+    while (ch != '(')
+        ch = fgetc(fileText);
+
+    ch = fgetc(fileText);
+    while (ch != '{')
     {
         fputc(ch, fileSource);
         ch = fgetc(fileText);
     }
 
-    // while ((ch = fgetc(fileText)) != EOF)
-    // {
-    //     perror("Message from perror");
-    //     fputc(ch, sourceFile);
-    //     // perror("Message from perror");
-    // }
+    fprintf(fileSource, "\n{\n\tcounter[0]++;\n");
 
-    // while ((fgets(buf, 1000, file)) != NULL)
-    // {
-    //     alltext = alltext + buf;
-    // }
-    // fseek(file, 0, SEEK_SET);
-    // fprintf(file, "int counter[20] = {0};\n");
-    // printf("%s", alltext);
-    fclose(fileText);
-    fclose(fileSource);
-
-    if ((fileSource = fopen(sourceFile, "a")) == NULL)
+    int i = 1;
+    ch = fgetc(fileText);
+    while (ch != EOF)
     {
-        printf("Error Opening\n");
-        return (1);
+
+        fputc(ch, fileSource);
+        if (ch == '{')
+        {
+            fprintf(fileSource, "\n\tcounter[%d]++;\n", i);
+            i++;
+        }
+        ch = fgetc(fileText);
+        if (ch == '}')
+        {
+            fprintf(fileSource, "\n\tcounter[%d]++;\n", i);
+            i++;
+        }
     }
+
+    fclose(fileText);
     fclose(fileSource);
 }
 
@@ -119,22 +137,22 @@ int main()
     printf("Hello %d\n", k);
     editFile();
 
-    printf("%d %d %d %d\n", counter[0], counter[1], counter[2], counter[3]);
-    int largest;
-    for (int k = 10; k < 100000; k = k * 10)
-    {
-        sumtest(k, k, k);
-        for (int j = 0; j < 5; j++)
-        {
-            printf("size[%d] ->counter[%d]: %d\n", k, j, counter[j]);
-        }
-        printf("\nsecond set\n\n");
-        counter[0] = 0;
-        counter[1] = 0;
-        counter[2] = 0;
-        counter[3] = 0;
-        counter[4] = 0;
-    }
+    // printf("%d %d %d %d\n", counter[0], counter[1], counter[2], counter[3]);
+    // int largest;
+    // for (int k = 10; k < 100000; k = k * 10)
+    // {
+    //     sumtest(k, k, k);
+    //     for (int j = 0; j < 5; j++)
+    //     {
+    //         printf("size[%d] ->counter[%d]: %d\n", k, j, counter[j]);
+    //     }
+    //     printf("\nsecond set\n\n");
+    //     counter[0] = 0;
+    //     counter[1] = 0;
+    //     counter[2] = 0;
+    //     counter[3] = 0;
+    //     counter[4] = 0;
+    // }
 
     return 0;
 }
