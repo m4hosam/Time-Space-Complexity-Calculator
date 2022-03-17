@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "complexty.c"
 #define text "index.txt"
 
 // Stack Part
@@ -8,6 +9,7 @@ char arr[20];
 int top = 0;
 int elementNumber = 0;
 char opsCases[20][20] = {"++", "--", "+=", "-=", "/=", "*=", "+", "-", "/", "*"};
+char loops[20][20] = {"do", "while", "for", "{", "}", " "};
 
 int isEmpty()
 {
@@ -100,26 +102,53 @@ char *removeWhiteSpaces(char *str)
     return str;
 }
 
-int getWhileInfo(int ptr, char varName)
+char *getWhileInfo(int ptrDo, int ptrWhile)
 {
     FILE *fileText;
+    char ops[20][20] = {""};
+    char buf[100] = "";
+    char *ptrs[20];
+    char tmp[5];
+    int j = 0;
+    char *complexty = malloc(100);
+
     if ((fileText = fopen(text, "r")) == NULL)
     {
         printf("Error Opening\n");
-        return (1);
+        return "(1)";
     }
-    fseek(fileText, ptr, SEEK_SET);
-    char ops[20][20] = {""};
-    for (int i = 0; i < 10; i++)
+    fseek(fileText, ptrWhile, SEEK_SET);
+    fgets(buf, 100, fileText);
+    strcpy(buf, removeWhiteSpaces(buf));
+    char *ptr2 = strstr(buf, "(");
+
+    for (int i = (ptr2 - buf); buf[i] != ')'; i++)
     {
-        ops[i][0] = varName;
-        strcat(ops[i], opsCases[i]);
+        tmp[j] = buf[i];
+        j++;
     }
 
-    char buf[100];
-    char *ptrs[20];
-    int k, endDoloop;
-    int j;
+    char vaiableName = tmp[1];
+    char itrator = tmp[j - 1];
+    if (isdigit(vaiableName) || isdigit(itrator))
+    {
+        return "1";
+    }
+
+    if (ptrDo == 0)
+    {
+        fseek(fileText, ptrWhile, SEEK_SET);
+    }
+    else
+    {
+        fseek(fileText, ptrDo, SEEK_SET);
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        ops[i][0] = vaiableName;
+        strcat(ops[i], opsCases[i]);
+    }
 
     while ((fgets(buf, 100, fileText)) != NULL)
     {
@@ -144,23 +173,24 @@ int getWhileInfo(int ptr, char varName)
             if (!isEmpty())
                 break;
         }
-        endDoloop = ftell(fileText);
     }
     if (j < 4)
-        printf("O(n)\n");
+        strcpy(complexty, "O(n)");
     else if (j > 3 && j < 6)
-        printf("O(log(n))");
+        strcpy(complexty, "O(logn)");
     else if (j > 5 && j < 8)
-        printf("O(n)");
+        strcpy(complexty, "O(n)");
     else if (j > 7 && j < 10)
-        printf("O(log(n))");
+        strcpy(complexty, "O(logn)");
     else
-        printf("ERROR READING FOR %d", j);
+        return "1";
     // for (int j = 0; j < 10; j++)
     //     printf("%s ", ops[j]);
+    printf("comp1: %s\n", complexty);
+    return complexty;
 }
 
-int getDoWhileInfo(int ptr)
+char *getDoWhileInfo(int ptr)
 {
     FILE *fileText;
     if ((fileText = fopen(text, "r")) == NULL)
@@ -187,43 +217,17 @@ int getDoWhileInfo(int ptr)
         endDoloop = ftell(fileText);
     }
 
-    fseek(fileText, endDoloop, SEEK_SET);
-    fgets(buf, 100, fileText);
-    char *chr = strstr(buf, "while");
-    char *ptr2 = strstr(buf, "(");
-    char tmp[5];
-    int j = 0;
-    if (chr != NULL)
-    {
-        for (int i = (ptr2 - buf); buf[i] != ')'; i++)
-        {
-            if (buf[i] != ' ')
-            {
-                tmp[j] = buf[i];
-                j++;
-            }
-        }
-    }
-    char vaiableName = tmp[1];
-    char itrator = tmp[j - 1];
-    if (isdigit(vaiableName) || isdigit(itrator))
-    {
-        printf("digit means O(1) :) \n");
-    }
-    else
-    {
-        printf("O(?) :) \n");
-        getWhileInfo(ptr, vaiableName);
-    }
+    // printf("co2: %s\n", getWhileInfo(ptr, endDoloop));
+    return getWhileInfo(ptr, endDoloop);
 
     fclose(fileText);
 }
 
-void getForInfo(char buf[])
+char *getForInfo(char buf[])
 {
     char *ch = strstr(buf, ";");
     char *ptr[20];
-
+    char *complexty = malloc(100);
     int index = ch - buf + 1;
     char tmp = buf[index];
     for (int i = index; buf[i] != ';'; i++)
@@ -234,7 +238,7 @@ void getForInfo(char buf[])
     // printf("%c\n", tmp);
     if (isdigit(tmp))
     {
-        printf("digit means O(1) :) \n");
+        return "1";
     }
     else
     {
@@ -249,17 +253,18 @@ void getForInfo(char buf[])
                 break;
         }
         if (k < 4)
-            printf("O(n)\n");
+            strcpy(complexty, "O(n)");
         else if (k > 3 && k < 6)
-            printf("O(log(n))");
+            strcpy(complexty, "O(logn)");
         else if (k > 5 && k < 8)
-            printf("O(n)");
+            strcpy(complexty, "O(n)");
         else if (k > 7 && k < 10)
-            printf("O(log(n))");
+            strcpy(complexty, "O(logn)");
         else
-            printf("ERROR READING FOR");
+            return "1";
         // printf("text: %s\n", ptr[k]);
     }
+    return complexty;
 }
 
 int getFileInfo()
@@ -275,22 +280,59 @@ int getFileInfo()
     }
 
     char buf[100];
-    int startIndex;
+    int startIndex = ftell(fileText);
     int flag = 0;
+    char *ptrs[20];
+    int i;
 
     while ((fgets(buf, 100, fileText)) != NULL)
     {
-        char *ptr = strstr(buf, "do{");
-        if (ptr != NULL)
+        for (i = 0; i < 6; i++)
         {
-            // printf("tell: %d\n", ftell(fileText));
-            flag = 1;
+            ptr[i] = strstr(buf, loops[k]);
+            if (ptrs[i] != NULL)
+                break;
+        }
+
+        switch (i)
+        {
+        case 0:
+            /* Do While loop */
+
+            break;
+        case 1:
+            /* While loop */
+            break;
+        case 2:
+            /* For loop */
+            break;
+        case 3:
+            /* { bracket*/
+            break;
+        case 4:
+            /* } bracket*/
+            break;
+        case 5:
+            /* not interested */
+            break;
+
+        default:
             break;
         }
+
+        // char *ptr = strstr(buf, "for");
+        // if (ptr != NULL)
+        // {
+        //     // printf("tell: %d\n", ftell(fileText));
+        //     printf("complexty3: %s", getForInfo(buf));
+        //     flag = 1;
+        //     break;
+        // }
         startIndex = ftell(fileText);
     }
-    getDoWhileInfo(startIndex);
-
+    // char *zeda = getDoWhileInfo(startIndex);
+    // getDoWhileInfo(startIndex);
+    // printf("complexty3: %s", getForInfo(buf));
     fclose(fileText);
 }
 
